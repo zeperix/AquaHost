@@ -541,6 +541,8 @@ namespace confighttp {
       nlohmann::json file_tree = nlohmann::json::parse(content);
 
       file_tree["current_app"] = proc::proc.get_running_app_uuid();
+      file_tree["host_uuid"] = http::unique_id;
+      file_tree["host_name"] = config::nvhttp.sunshine_name;
 
       send_response(response, file_tree);
     } catch (std::exception &e) {
@@ -869,6 +871,7 @@ namespace confighttp {
       std::string display_mode = input_tree.value("display_mode", "");
       bool enable_legacy_ordering = input_tree.value("enable_legacy_ordering", true);
       bool allow_client_commands = input_tree.value("allow_client_commands", true);
+      bool always_use_virtual_display = input_tree.value("always_use_virtual_display", false);
       auto do_cmds = nvhttp::extract_command_entries(input_tree, "do");
       auto undo_cmds = nvhttp::extract_command_entries(input_tree, "undo");
       auto perm = static_cast<crypto::PERM>(input_tree.value("perm", static_cast<uint32_t>(crypto::PERM::_no)) & static_cast<uint32_t>(crypto::PERM::_all));
@@ -880,7 +883,8 @@ namespace confighttp {
         undo_cmds,
         perm,
         enable_legacy_ordering,
-        allow_client_commands
+        allow_client_commands,
+        always_use_virtual_display
       );
       send_response(response, output_tree);
     } catch (std::exception &e) {
@@ -1285,6 +1289,8 @@ namespace confighttp {
 
     print_req(request);
 
+    proc::proc.terminate();
+
     // We may not return from this call
     platf::restart();
   }
@@ -1304,6 +1310,9 @@ namespace confighttp {
     print_req(request);
 
     BOOST_LOG(warning) << "Requested quit from config page!"sv;
+
+    proc::proc.terminate();
+
 #ifdef _WIN32
     if (GetConsoleWindow() == NULL) {
       lifetime::exit_sunshine(ERROR_SHUTDOWN_IN_PROGRESS, true);

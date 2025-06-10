@@ -62,6 +62,7 @@ namespace proc {
    */
   struct ctx_t {
     std::vector<cmd_t> prep_cmds;
+    std::vector<cmd_t> state_cmds;
 
     /**
      * Some applications, such as Steam, either exit quickly, or keep running indefinitely.
@@ -94,6 +95,7 @@ namespace proc {
     bool use_app_identity;
     bool per_client_app_identity;
     bool allow_client_commands;
+    bool terminate_on_pause;
     int  scale_factor;
     std::chrono::seconds exit_timeout;
   };
@@ -105,15 +107,14 @@ namespace proc {
     std::string display_name;
     std::string initial_display;
     std::string mode_changed_display;
-    bool initial_hdr;
-    bool virtual_display;
-    bool allow_client_commands;
+    bool initial_hdr = false;
+    bool virtual_display = false;
+    bool allow_client_commands = false;
 
     proc_t(
       boost::process::v1::environment &&env,
       std::vector<ctx_t> &&apps
     ):
-        _app_id(0),
         _env(std::move(env)),
         _apps(std::move(apps)) {
     }
@@ -135,10 +136,12 @@ namespace proc {
     std::string get_last_run_app_name();
     std::string get_running_app_uuid();
     boost::process::v1::environment get_env();
+    void resume();
+    void pause();
     void terminate(bool immediate = false, bool needs_refresh = true);
 
   private:
-    int _app_id;
+    int _app_id = 0;
     std::string _app_name;
 
     boost::process::v1::environment _env;
@@ -162,7 +165,7 @@ namespace proc {
   };
 
   boost::filesystem::path
-  find_working_directory(const std::string &cmd, boost::process::v1::environment &env);
+  find_working_directory(const std::string &cmd, const boost::process::v1::environment &env);
 
   /**
    * @brief Calculate a stable id based on name and image data
