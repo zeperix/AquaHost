@@ -1303,6 +1303,7 @@ namespace config {
     }
 
     string_restricted_f(vars, "locale", config::sunshine.locale, {
+                                                                   "vi"sv,  // Vietnamese
                                                                    "bg"sv,  // Bulgarian
                                                                    "de"sv,  // German
                                                                    "en"sv,  // English
