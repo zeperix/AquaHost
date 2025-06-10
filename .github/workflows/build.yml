@@ -248,7 +248,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Python Path
+      - name: Python Path 
         id: python-path
         shell: msys2 {0}
         run: |
