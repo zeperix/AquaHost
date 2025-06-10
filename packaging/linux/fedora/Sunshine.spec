@@ -255,8 +255,8 @@ rm -f /usr/lib/modules-load.d/uhid.conf
 %{_datadir}/applications/sunshine*.desktop
 
 # Icons
-%{_datadir}/icons/hicolor/scalable/apps/apollo.svg
-%{_datadir}/icons/hicolor/scalable/status/apollo*.svg
+%{_datadir}/icons/hicolor/scalable/apps/aquahost.svg
+%{_datadir}/icons/hicolor/scalable/status/aquahost*.svg
 
 # Metainfo
 %{_datadir}/metainfo/sunshine.appdata.xml

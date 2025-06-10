@@ -446,7 +446,7 @@ namespace confighttp {
   void getFaviconImage(resp_https_t response, req_https_t request) {
     print_req(request);
 
-    std::ifstream in(WEB_DIR "images/apollo.ico", std::ios::binary);
+    std::ifstream in(WEB_DIR "images/aquahost.ico", std::ios::binary);
     SimpleWeb::CaseInsensitiveMultimap headers {
       {"Content-Type", "image/x-icon"}
     };
@@ -454,17 +454,17 @@ namespace confighttp {
   }
 
   /**
-   * @brief Get the Apollo logo image.
+   * @brief Get the AquaHost logo image.
    * @param response The HTTP response object.
    * @param request The HTTP request object.
    *
    * @todo combine function with getFaviconImage and possibly getNodeModules
    * @todo use mime_types map
    */
-  void getApolloLogoImage(resp_https_t response, req_https_t request) {
+  void getAquaHostLogoImage(resp_https_t response, req_https_t request) {
     print_req(request);
 
-    std::ifstream in(WEB_DIR "images/logo-apollo-45.png", std::ios::binary);
+    std::ifstream in(WEB_DIR "images/logo-aquahost-45.png", std::ios::binary);
     SimpleWeb::CaseInsensitiveMultimap headers {
       {"Content-Type", "image/png"}
     };
@@ -1276,7 +1276,7 @@ namespace confighttp {
   }
 
   /**
-   * @brief Restart Apollo.
+   * @brief Restart AquaHost.
    * @param response The HTTP response object.
    * @param request The HTTP request object.
    *
@@ -1296,7 +1296,7 @@ namespace confighttp {
   }
 
   /**
-   * @brief Quit Apollo.
+   * @brief Quit AquaHost.
    * @param response The HTTP response object.
    * @param request The HTTP request object.
    *
@@ -1511,8 +1511,8 @@ namespace confighttp {
     server.resource["^/api/clients/unpair$"]["POST"] = unpair;
     server.resource["^/api/clients/disconnect$"]["POST"] = disconnect;
     server.resource["^/api/covers/upload$"]["POST"] = uploadCover;
-    server.resource["^/images/apollo.ico$"]["GET"] = getFaviconImage;
-    server.resource["^/images/logo-apollo-45.png$"]["GET"] = getApolloLogoImage;
+    server.resource["^/images/aquahost.ico$"]["GET"] = getFaviconImage;
+    server.resource["^/images/logo-aquahost-45.png$"]["GET"] = getAquaHostLogoImage;
     server.resource["^/assets\\/.+$"]["GET"] = getNodeModules;
     server.config.reuse_address = true;
     server.config.address = net::af_to_any_address_string(address_family);

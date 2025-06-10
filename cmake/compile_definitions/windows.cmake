@@ -33,9 +33,9 @@ file(GLOB NVPREFS_FILES CONFIGURE_DEPENDS
 # vigem
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/third-party/ViGEmClient/include")
 
-# apollo icon
+# aquahost icon
 if(NOT DEFINED SUNSHINE_ICON_PATH)
-    set(SUNSHINE_ICON_PATH "${CMAKE_SOURCE_DIR}/apollo.ico")
+    set(SUNSHINE_ICON_PATH "${CMAKE_SOURCE_DIR}/aquahost.ico")
 endif()
 
 configure_file("${CMAKE_SOURCE_DIR}/src/platform/windows/windows.rc.in" windows.rc @ONLY)
