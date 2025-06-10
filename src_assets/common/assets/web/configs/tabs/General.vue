@@ -61,7 +61,7 @@ onMounted(() => {
     <div class="mb-3">
       <label for="locale" class="form-label">{{ $t('config.locale') }}</label>
       <select id="locale" class="form-select" v-model="config.locale">
-        <option value="vibg">Tiếng Việt (Vietnamene)</option>
+        <option value="vi">Tiếng Việt (Vietnamene)</option>
         <option value="bg">Български (Bulgarian)</option>
         <option value="de">Deutsch (German)</option>
         <option value="en">English</option>
