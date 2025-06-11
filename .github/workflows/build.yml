@@ -32,24 +32,12 @@ jobs:
 
   setup_release:
     name: Setup Release
-    outputs:
-      publish_release: ${{ steps.setup_release.outputs.publish_release }}
-      release_body: ${{ steps.setup_release.outputs.release_body }}
-      release_commit: ${{ steps.setup_release.outputs.release_commit }}
-      release_generate_release_notes: ${{ steps.setup_release.outputs.release_generate_release_notes }}
-      release_tag: ${{ steps.setup_release.outputs.release_tag }}
-      release_version: ${{ steps.setup_release.outputs.release_version }}
     permissions:
-      contents: write  # read does not work to check squash and merge details
+      contents: write 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Release
-        id: setup_release
-        uses: LizardByte/setup-release-action@v2025.426.225
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   build_win:
     name: Windows
@@ -61,9 +49,8 @@ jobs:
 
       - name: Prepare tests
         id: prepare-tests
-        if: false  # todo: DirectX11 is not available, so even software encoder fails
+        if: false 
         run: |
-          # function to download and extract a zip file
           function DownloadAndExtract {
             param (
               [string]$Uri,
@@ -91,35 +78,26 @@ jobs:
               exit 1
             }
 
-            # use .NET to get the base name of the file
             $baseName = (Get-Item $OutFile).BaseName
 
-            # Extract the zip file
             Expand-Archive -Path $OutFile -DestinationPath $baseName
           }
 
-          # virtual display driver
           DownloadAndExtract `
             -Uri "https://www.amyuni.com/downloads/usbmmidd_v2.zip" `
             -OutFile "usbmmidd_v2.zip"
 
-          # install
           Set-Location -Path usbmmidd_v2/usbmmidd_v2
           ./deviceinstaller64 install usbmmidd.inf usbmmidd
 
-          # create the virtual display
           ./deviceinstaller64 enableidd 1
 
-          # move up a directory
           Set-Location -Path ../..
 
-          # install devcon
           DownloadAndExtract `
             -Uri "https://github.com/Drawbackz/DevCon-Installer/releases/download/1.4-rc/Devcon.Installer.zip" `
             -OutFile "Devcon.Installer.zip"
           Set-Location -Path Devcon.Installer
-          # hash needs to match OS version
-          # https://github.com/Drawbackz/DevCon-Installer/blob/master/devcon_sources.json
           Start-Process -FilePath "./Devcon Installer.exe" -Wait -ArgumentList `
             'install', `
             '-hash', '54004C83EE34F6A55380528A8B29F4C400E61FBB947A19E0AB9E5A193D7D961E', `
@@ -127,40 +105,25 @@ jobs:
             '-update', `
             '-dir', 'C:\Windows\System32'
 
-          # disable Hyper-V Video
-          # https://stackoverflow.com/a/59490940
           C:\Windows\System32\devcon.exe disable "VMBUS\{da0a7802-e377-4aac-8e77-0558eb1073f8}"
 
-          # move up a directory
           Set-Location -Path ..
 
-          # multi monitor tool
           DownloadAndExtract `
             -Uri "http://www.nirsoft.net/utils/multimonitortool-x64.zip" `
             -OutFile "multimonitortool.zip"
 
-          # enable the virtual display
-          # http://www.nirsoft.net/utils/multi_monitor_tool.html
           Set-Location -Path multimonitortool
 
-          # Original Hyper-V is \\.\DISPLAY1, it will recreate itself as \\.\DISPLAY6 (or something higher than 2)
-          # USB Mobile Monitor Virtual Display is \\.\DISPLAY2
-
-          # these don't seem to work if not using runAs
-          # todo: do they work if not using runAs?
           Start-Process powershell -Verb runAs -ArgumentList '-Command ./MultiMonitorTool.exe /enable \\.\DISPLAY2'
           Start-Process powershell -Verb runAs -ArgumentList '-Command ./MultiMonitorTool.exe /SetPrimary \\.\DISPLAY2'
 
-          # wait a few seconds
           Start-Sleep -s 5
 
-          # list monitors
           ./MultiMonitorTool.exe /stext monitor_list.txt
 
-          # wait a few seconds
           Start-Sleep -s 5
 
-          # print the monitor list
           Get-Content -Path monitor_list.txt
 
       - name: Setup Dependencies Windows
@@ -191,9 +154,8 @@ jobs:
 
       - name: Install additional dependencies
         shell: msys2 {0}
-        continue-on-error: true  # Allow partial success
+        continue-on-error: true 
         run: |
-          # Try to install additional packages but don't fail if some can't be installed
           pacman -S --noconfirm \
             mingw-w64-ucrt-x86_64-cppwinrt \
             mingw-w64-ucrt-x86_64-curl-winssl \
@@ -206,31 +168,6 @@ jobs:
             mingw-w64-ucrt-x86_64-openssl \
             mingw-w64-ucrt-x86_64-opus
 
-      - name: Install Doxygen
-        # GCC compiled doxygen has issues when running graphviz
-        env:
-          DOXYGEN_VERSION: "1.11.0"
-        run: |
-          # Set version variables
-          $doxy_ver = $env:DOXYGEN_VERSION
-          $_doxy_ver = $doxy_ver.Replace(".", "_")
-
-          # Download the Doxygen installer
-          Invoke-WebRequest -Uri `
-            "https://github.com/doxygen/doxygen/releases/download/Release_${_doxy_ver}/doxygen-${doxy_ver}-setup.exe" `
-            -OutFile "doxygen-setup.exe"
-
-          # Run the installer
-          Start-Process `
-            -FilePath .\doxygen-setup.exe `
-            -ArgumentList `
-              '/VERYSILENT' `
-          -Wait `
-          -NoNewWindow
-
-          # Clean up
-          Remove-Item -Path doxygen-setup.exe
-
       - name: Setup python
         id: setup-python
         uses: actions/setup-python@v5
@@ -241,10 +178,7 @@ jobs:
         id: python-path
         shell: msys2 {0}
         run: |
-          # replace backslashes with double backslashes
           python_path=$(echo "${{ steps.setup-python.outputs.python-path }}" | sed 's/\\/\\\\/g')
-
-          # step output
           echo "python-path=${python_path}"
           echo "python-path=${python_path}" >> $GITHUB_OUTPUT
 
@@ -252,9 +186,8 @@ jobs:
         shell: msys2 {0}
         env:
           BRANCH: ${{ github.head_ref || github.ref_name }}
-          BUILD_VERSION: ${{ needs.setup_release.outputs.release_tag }}
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-          COMMIT: ${{ needs.setup_release.outputs.release_commit }}
+          BUILD_VERSION: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '1.0.0-dev' }}
+          COMMIT: ${{ github.sha }}
         run: |
           mkdir -p build
           cmake \
@@ -265,8 +198,8 @@ jobs:
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DAQUA_ASSETS_DIR=assets \
             -DAQUA_PUBLISHER_NAME='${{ github.repository_owner }}' \
-            -DAQUA_PUBLISHER_WEBSITE='https://app.lizardbyte.dev' \
-            -DAQUA_PUBLISHER_ISSUE_URL='https://app.lizardbyte.dev/support'
+            -DAQUA_PUBLISHER_WEBSITE='https://github.com/zeperix/AquaHost' \
+            -DAQUA_PUBLISHER_ISSUE_URL='https://github.com/zeperix/AquaHost/issues'
           ninja -C build
 
       - name: Package Windows
@@ -290,14 +223,15 @@ jobs:
           path: artifacts/
           if-no-files-found: error
 
-      - name: Create/Update GitHub Release
-        if: needs.setup_release.outputs.publish_release == 'true'
-        uses: LizardByte/create-release-action@v2025.426.1549
+      - name: Create Release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
         with:
-          allowUpdates: true
-          body: ${{ needs.setup_release.outputs.release_body }}
-          generateReleaseNotes: ${{ needs.setup_release.outputs.release_generate_release_notes }}
-          name: ${{ needs.setup_release.outputs.release_tag }}
+          draft: false
           prerelease: true
-          tag: ${{ needs.setup_release.outputs.release_tag }}
-          token: ${{ secrets.GH_BOT_TOKEN }}
+          generate_release_notes: true
+          files: |
+            artifacts/AquaHost-installer.exe
+            artifacts/AquaHost-portable.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
