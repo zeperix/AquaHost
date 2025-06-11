@@ -44,6 +44,8 @@ jobs:
   build_win:
     name: Windows
     needs: setup_release
+    permissions:
+      contents: write # Add write permission for releases
     runs-on: windows-2022
     steps:
       - name: Checkout
@@ -229,8 +231,10 @@ jobs:
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v1
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}  # Explicitly set token
+          tag_name: ${{ github.event.release.tag_name }}  # Use release tag
           draft: false
-          prerelease: true
+          prerelease: false
           generate_release_notes: true
           files: |
             artifacts/AquaHost-installer.exe
