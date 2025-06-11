@@ -190,8 +190,8 @@ jobs:
         shell: msys2 {0}
         env:
           BRANCH: ${{ github.head_ref || github.ref_name }}
-          BUILD_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || '1.0.0-dev' }}
-          COMMIT: ${{ github.sha }}
+          BUILD_VERSION: v1.0
+          COMMIT: 3
         run: |
           mkdir -p build
           cmake \
